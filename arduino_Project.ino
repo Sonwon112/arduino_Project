@@ -9,21 +9,51 @@ int sonarTrig[] = {2,3,4,5,6,7};
 int sonarEcho[] = {8,9,10,11,12,13};
 
 // 로터리 엔코더
-int rotaryCLK = 14;
-int rotaryDT = 15;
-int rotarySW = 16;
+int rotaryCLK = 22;
+int rotaryDT = 23;
 
 // 블루투스 모듈
 int blueTX = 17;
 int blueRX = 18;
 
+int oldCLK = 0;
+int oldDT = 0;
+int direction = 0;
+
+Thread myThread = Thread();
+
+void clacDirection(){
+  
+  int newCLK = digitalRead(rotaryCLK);
+  int newDT = digitalRead(rotaryDT);
+  Serial.print("newDT : ");
+  Serial.println(newDT);
+  Serial.print("oldDT : ");
+  Serial.println(oldDT);
+
+  Serial.print("newCLK : ");
+  Serial.println(newCLK);
+  Serial.print("oldCLK : ");
+  Serial.println(oldCLK);
+
+  Serial.println("");
+  oldCLK = newCLK;
+  oldDT = newDT;
+  // Serial.println(direction);
+}
+
 
 void setup() {
   // put your setup code here, to run once:
-  
+  pinMode(rotaryCLK, INPUT);
+  pinMode(rotaryDT, INPUT);
+
+  Serial.begin(9600);
+  myThread.onRun(clacDirection);
+  myThread.setInterval(500);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-
+  if(myThread.shouldRun()) myThread.run();
 }
