@@ -25,30 +25,26 @@ int rotaryDT = 23;
 int blueTX = 17;
 int blueRX = 18;
 
-int oldCLK = 0;
-int oldDT = 0;
-int direction = 0;
+int oldCLK = LOW;
+int oldDT = LOW;
+int direction = 0; 
+int count = 0;
 
-Thread myThread = Thread();
+//360도에 23
 
-void clacDirection(){
+int getDirection() {
+  int direct = 0;                 // 방향을 0으로 초기화
+  int newCLK = digitalRead(rotaryCLK);  // 현재 CLK 값을 저장하는 변수
+  int newDT = digitalRead(rotaryDT);    // 현재 DT 값을 저장하는 변수
+  if (newCLK != oldCLK) {         // CLK 값이 변한 경우
+    if (oldCLK == LOW) {          // LOW에서 HIGH로 변한 경우
+      direct = oldDT * 2 - 1;     // DT 값을 이용해 direct 값 변경 
+    }
+  }
+  oldCLK = newCLK;  // oldCLK 갱신
+  oldDT = newDT;    // oldDT 갱신
   
-  int newCLK = digitalRead(rotaryCLK);
-  int newDT = digitalRead(rotaryDT);
-  Serial.print("newDT : ");
-  Serial.println(newDT);
-  Serial.print("oldDT : ");
-  Serial.println(oldDT);
-
-  Serial.print("newCLK : ");
-  Serial.println(newCLK);
-  Serial.print("oldCLK : ");
-  Serial.println(oldCLK);
-
-  Serial.println("");
-  oldCLK = newCLK;
-  oldDT = newDT;
-  // Serial.println(direction);
+  return direct; // 시계방향으로 회전한 경우 -1, 반시계방향으로 회전한 경우 +1 반환
 }
 
 void changeLevel(){
@@ -99,23 +95,27 @@ void changeLevel(){
 
 void setup() {
   // put your setup code here, to run once:
-  pinMode(rotaryCLK, INPUT);
-  pinMode(rotaryDT, INPUT);
+  pinMode(rotaryCLK, INPUT_PULLUP);
+  pinMode(rotaryDT, INPUT_PULLUP);
 
   for(int i = 0; i < 6; i++){
     pinMode(sonarTrig[i], OUTPUT);
     pinMode(sonarEcho[i], INPUT);
   }
   
+  digitalWrite(rotaryDT,HIGH);
   Serial.begin(9600);
-  myThread.onRun(clacDirection);
-  myThread.setInterval(500);
-  myThread.onRun(changeLevel);
-  myThread.setInterval(100);
-
+  // myThread.onRun(clacDirection);
+  // myThread.setInterval(500);
+  // myThread.onRun(changeLevel);
+  // myThread.setInterval(100);
+  
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   if(myThread.shouldRun()) myThread.run();
+  direction = getDirection();
+  count += direction * 5;
+  Serial.println(count);
 }
