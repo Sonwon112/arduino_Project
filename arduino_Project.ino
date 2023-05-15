@@ -67,33 +67,36 @@ void changeLevel(){
   if(distance[0]  < 3){//r단
     Serial.println(distance[0]);
     Serial.println("R단");
+     sendDataToBluetooth('R');
+
   }
   else if(distance[1] < 3){//1단
     Serial.println(distance[1]);
     Serial.println("1단");
+    sendDataToBluetooth('1');
   }
   else if(distance[2] < 3){//2단
     Serial.println(distance[2]);
-    Serial.println("2단");
+     sendDataToBluetooth('2');
   }
   else if(distance[3] < 3){//3단
     Serial.println(distance[3]);
-    Serial.println("3단");
+    sendDataToBluetooth('3');
   }
   else if(distance[4] < 3){//4단
     Serial.println(distance[4]);
-    Serial.println("4단");
+    sendDataToBluetooth('4');
   }
   else if(distance[5] < 3){//5단
     Serial.println(distance[5]);
-    Serial.println("5단");
+    sendDataToBluetooth('5');
   }
   else{//아무것도 아닐때, 즉 중립
     Serial.println("중립");
   }
 }
 
-void sendDataToBluetooth(int currGear){
+void sendDataToBluetooth(char currGear){
   Serial1.write(currGear);
 }
 
