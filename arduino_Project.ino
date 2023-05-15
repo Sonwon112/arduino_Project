@@ -3,6 +3,7 @@
 // 버튼(추가구매 필요)을 통해 엑셀과 브레이크 제어
 // 안드로이드와 블루투스 통신으로 현재 몇단인지 전송
 #include <Thread.h>
+#include <SoftwareSerial.h>
 
 // 초음파 센서 핀넘버
 //2,8 -> r단
@@ -92,6 +93,10 @@ void changeLevel(){
   }
 }
 
+void sendDataToBluetooth(int currGear){
+  Serial1.write(currGear);
+}
+
 
 void setup() {
   // put your setup code here, to run once:
@@ -105,10 +110,11 @@ void setup() {
   
   digitalWrite(rotaryDT,HIGH);
   Serial.begin(9600);
+  Serial1.begin(9600);
   // myThread.onRun(clacDirection);
   // myThread.setInterval(500);
-  // myThread.onRun(changeLevel);
-  // myThread.setInterval(100);
+  myThread.onRun(changeLevel);
+  myThread.setInterval(100);
   
 }
 
