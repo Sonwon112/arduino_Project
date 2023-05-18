@@ -15,6 +15,7 @@
 int sonarTrig[] = {2,3,4,5,6,7};
 int sonarEcho[] = {8,9,10,11,12,13};
 float distance[] = {0,0,0,0,0,0};
+char gear = 'C'; // 1, 2, 3, 4, 5, R, C
 
 Thread myThread = Thread();
 
@@ -22,14 +23,11 @@ Thread myThread = Thread();
 int rotaryCLK = 22;
 int rotaryDT = 23;
 
-// 블루투스 모듈
-int blueTX = 17;
-int blueRX = 18;
-
 int oldCLK = LOW;
 int oldDT = LOW;
 int direction = 0; 
 int count = 0;
+int prevCount = 0;
 
 //360도에 23
 
@@ -65,34 +63,39 @@ void changeLevel(){
   }
 
   if(distance[0]  < 3){//r단
-    Serial.println(distance[0]);
-    Serial.println("R단");
-     sendDataToBluetooth('R');
+    // Serial.println(distance[0]);
+    gear = 'R';
+    sendDataToBluetooth('R');
 
   }
   else if(distance[1] < 3){//1단
-    Serial.println(distance[1]);
-    Serial.println("1단");
+    // Serial.println(distance[1]);
+    gear = '1';
     sendDataToBluetooth('1');
   }
   else if(distance[2] < 3){//2단
-    Serial.println(distance[2]);
-     sendDataToBluetooth('2');
+    // Serial.println(distance[2]);
+    gear = '2';
+    sendDataToBluetooth('2');
   }
   else if(distance[3] < 3){//3단
-    Serial.println(distance[3]);
+    // Serial.println(distance[3]);
+    gear = '3';
     sendDataToBluetooth('3');
   }
   else if(distance[4] < 3){//4단
-    Serial.println(distance[4]);
+    // Serial.println(distance[4]);
+    gear = '4';
     sendDataToBluetooth('4');
   }
   else if(distance[5] < 3){//5단
-    Serial.println(distance[5]);
+    // Serial.println(distance[5]);
+    gear = '5';
     sendDataToBluetooth('5');
   }
   else{//아무것도 아닐때, 즉 중립
-    Serial.println("중립");
+    gear = 'C';
+    // Serial.println("중립");
   }
 }
 
@@ -113,7 +116,7 @@ void setup() {
   
   digitalWrite(rotaryDT,HIGH);
   Serial.begin(9600);
-  Serial1.begin(9600);
+  Serial1.begin(9600);// 18,19
   // myThread.onRun(clacDirection);
   // myThread.setInterval(500);
   myThread.onRun(changeLevel);
@@ -121,10 +124,19 @@ void setup() {
   
 }
 
+void SerialSend(){
+  if(prevCount != count){
+    Serial.write(gear+","+count);
+    prevCount = count;
+  }
+}
+
 void loop() {
   // put your main code here, to run repeatedly:
   if(myThread.shouldRun()) myThread.run();
   direction = getDirection();
   count += direction * 5;
-  Serial.println(count);
+  SerialSend();
+  // Serial.println(count);
+
 }
