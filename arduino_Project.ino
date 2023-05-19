@@ -15,7 +15,7 @@
 int sonarTrig[] = {2,3,4,5,6,7};
 int sonarEcho[] = {8,9,10,11,12,13};
 float distance[] = {0,0,0,0,0,0};
-char gear = 'C'; // 1, 2, 3, 4, 5, R, C
+
 
 Thread myThread = Thread();
 
@@ -26,7 +26,10 @@ int rotaryDT = 23;
 int oldCLK = LOW;
 int oldDT = LOW;
 int direction = 0; 
+
+char gear = 'C'; // 1, 2, 3, 4, 5, R, C
 int count = 0;
+char prevGear = 'C';
 int prevCount = 0;
 
 //360도에 23
@@ -125,9 +128,12 @@ void setup() {
 }
 
 void SerialSend(){
-  if(prevCount != count){
-    Serial.write(gear+","+count);
+  if(prevCount != count || prevGear != gear){
+    Serial.print(gear);
+    Serial.print(",");
+    Serial.println(count);
     prevCount = count;
+    prevGear = gear;
   }
 }
 
