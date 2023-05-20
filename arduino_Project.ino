@@ -141,7 +141,7 @@ void loop() {
   // put your main code here, to run repeatedly:
   if(myThread.shouldRun()) myThread.run();
   direction = getDirection();
-  count += direction * 5;
+  count += direction * 25;
   SerialSend();
   // Serial.println(count);
 
