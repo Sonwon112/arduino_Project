@@ -103,7 +103,11 @@ void changeLevel(){
 }
 
 void sendDataToBluetooth(char currGear){
-  Serial1.write(currGear);
+  if(prevGear != currGear){
+    Serial1.write(currGear);
+    prevGear = currGear;
+  }
+  
 }
 
 
