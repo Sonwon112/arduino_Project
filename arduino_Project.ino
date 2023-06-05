@@ -27,10 +27,19 @@ int oldCLK = LOW;
 int oldDT = LOW;
 int direction = 0; 
 
-char gear = 'C'; // 1, 2, 3, 4, 5, R, C
+String gear = "N"; // 1, 2, 3, 4, 5, R, N
 int count = 0;
-char prevGear = 'C';
+String prevGear = "N";
 int prevCount = 0;
+
+// 스위치로 시동 켜기
+int sw = 24; 
+int swBreak = 26;
+int accel = 28;
+
+int isSwitch = 0;
+int isBreak = 0;
+int isAccel = 0;
 
 //360도에 23
 
@@ -50,6 +59,7 @@ int getDirection() {
 }
 
 void changeLevel(){
+  int isNeutrality = 0; // 0 중립 1 최솟값으로 계산해야하는 기어단수 2 최대값으로 계산해야하는 기어단수(노이즈로 1000이 넘는 경우 대비)
   for(int i = 0; i < 6; i++){
     digitalWrite(sonarTrig[i], LOW);
     digitalWrite(sonarEcho[i], LOW);
@@ -63,49 +73,52 @@ void changeLevel(){
     // Serial.print(i);
     // Serial.print(" : ");
     // Serial.println(distance[i]);
+    delayMicroseconds(2000);
   }
 
-  if(distance[0]  < 3){//r단
-    // Serial.println(distance[0]);
-    gear = 'R';
-    sendDataToBluetooth('R');
-
+  distance[5] -= 2;
+  // Serial.println();
+  for( int i = 0; i < 6; i++){
+    if (distance[i] < 6){
+      isNeutrality = 1;
+    }
+    if(distance[i] > 100){
+      isNeutrality = 2;
+    }
   }
-  else if(distance[1] < 3){//1단
-    // Serial.println(distance[1]);
-    gear = '1';
-    sendDataToBluetooth('1');
+  if(isNeutrality == 0){
+    // Serial.println("N");
+    gear = "N";
+  }else{
+    int minIndex = 0;
+    for(int i = 1; i < 6; i++){
+      if(isNeutrality == 1){
+        if(distance[minIndex] > distance[i]){
+        minIndex = i;
+        }
+      }else{
+        if(distance[minIndex] < distance[i]){
+        minIndex = i;
+        }
+      }    
+    }
+    if(minIndex == 0){
+      // Serial.println("R단");
+      gear = "R";
+    }else{
+      // Serial.print(minIndex);
+      // Serial.println("단");
+      gear = String(minIndex);
+    }
   }
-  else if(distance[2] < 3){//2단
-    // Serial.println(distance[2]);
-    gear = '2';
-    sendDataToBluetooth('2');
-  }
-  else if(distance[3] < 3){//3단
-    // Serial.println(distance[3]);
-    gear = '3';
-    sendDataToBluetooth('3');
-  }
-  else if(distance[4] < 3){//4단
-    // Serial.println(distance[4]);
-    gear = '4';
-    sendDataToBluetooth('4');
-  }
-  else if(distance[5] < 3){//5단
-    // Serial.println(distance[5]);
-    gear = '5';
-    sendDataToBluetooth('5');
-  }
-  else{//아무것도 아닐때, 즉 중립
-    gear = 'C';
-    // Serial.println("중립");
-  }
+    sendDataToBluetooth();
 }
 
-void sendDataToBluetooth(char currGear){
-  if(prevGear != currGear){
-    Serial1.write(currGear);
-    prevGear = currGear;
+void sendDataToBluetooth(){
+  if(!prevGear.equals(gear)){
+    // Serial1.write(gear);
+    Serial.println(gear);
+    prevGear = gear;
   }
   
 }
@@ -129,24 +142,39 @@ void setup() {
   myThread.onRun(changeLevel);
   myThread.setInterval(100);
   
+  pinMode(sw, INPUT_PULLUP);
+  pinMode(swBreak, INPUT_PULLUP);
+  pinMode(accel, INPUT_PULLUP);
+
 }
 
 void SerialSend(){
-  if(prevCount != count || prevGear != gear){
+  // if(prevCount != count || !prevGear.equals(gear)){
     Serial.print(gear);
     Serial.print(",");
-    Serial.println(count);
+    Serial.print(count);
+    Serial.print(",");
+    Serial.print(isSwitch);
+    Serial.print(",");
+    Serial.print(isAccel);
+    Serial.print(",");
+    Serial.println(isBreak);
     prevCount = count;
     prevGear = gear;
-  }
+    
+  // }
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
   if(myThread.shouldRun()) myThread.run();
   direction = getDirection();
-  count += direction * 25;
+  count += direction  ;
+  isSwitch = digitalRead(sw);
+  isBreak = digitalRead(swBreak);
+  isAccel = digitalRead(accel);
   SerialSend();
   // Serial.println(count);
+  // 스위치 시동
 
 }
